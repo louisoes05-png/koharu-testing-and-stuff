@@ -79,7 +79,10 @@
     "detectTooltip": "현재 페이지에서 텍스트 감지 실행",
     "ocr": "OCR",
     "ocrTooltip": "감지된 영역에 대한 텍스트 인식",
-    "render": "렌더"
+    "render": "렌더",
+    "preparingImport": "가져오기 준비 중",
+    "scanningFolders": "드롭한 폴더를 스캔하는 중",
+    "importingFiles": "파일을 가져오는 중"
   },
   "mask": {
     "showSegmentationMask": "세그멘테이션 마스크 표시",

@@ -160,9 +160,9 @@ function OperationCard({
     inpaint: t('mask.inpaint'),
     llmGenerate: t('llm.generate'),
     render: t('processing.render'),
-    preparingImport: 'Preparing import',
-    scanningFolders: 'Scanning dropped folders',
-    importingFiles: 'Importing files',
+    preparingImport: t('processing.preparingImport'),
+    scanningFolders: t('processing.scanningFolders'),
+    importingFiles: t('processing.importingFiles'),
   }
 
   const stepLabel = ctx.step ? (stepLabels[ctx.step] ?? ctx.step) : undefined

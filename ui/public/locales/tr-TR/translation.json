@@ -79,7 +79,10 @@
     "detectTooltip": "Geçerli sayfada metin algılamayı çalıştır",
     "ocr": "OCR",
     "ocrTooltip": "Algılanan bölgelerdeki metni tanı",
-    "render": "Render"
+    "render": "Render",
+    "preparingImport": "İçe aktarma hazırlanıyor",
+    "scanningFolders": "Bırakılan klasörler taranıyor",
+    "importingFiles": "Dosyalar içe aktarılıyor"
   },
   "mask": {
     "showSegmentationMask": "Segmentasyon maskesini göster",

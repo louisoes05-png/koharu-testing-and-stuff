@@ -79,7 +79,10 @@
     "detectTooltip": "現在のページでテキスト検出を実行",
     "ocr": "OCR",
     "ocrTooltip": "検出された領域のテキストを認識",
-    "render": "レンダー"
+    "render": "レンダー",
+    "preparingImport": "インポートを準備中",
+    "scanningFolders": "ドロップしたフォルダーを走査中",
+    "importingFiles": "ファイルをインポート中"
   },
   "mask": {
     "showSegmentationMask": "セグメンテーションマスクを表示",

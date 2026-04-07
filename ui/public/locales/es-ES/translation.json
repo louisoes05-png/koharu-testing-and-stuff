@@ -79,7 +79,10 @@
     "detectTooltip": "Ejecutar detección de texto en la página actual",
     "ocr": "OCR",
     "ocrTooltip": "Reconocer texto en las regiones detectadas",
-    "render": "Renderizar"
+    "render": "Renderizar",
+    "preparingImport": "Preparando importación",
+    "scanningFolders": "Escaneando carpetas soltadas",
+    "importingFiles": "Importando archivos"
   },
   "mask": {
     "showSegmentationMask": "Mostrar máscara de segmentación",

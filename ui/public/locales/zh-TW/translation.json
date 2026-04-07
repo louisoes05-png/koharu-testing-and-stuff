@@ -79,7 +79,10 @@
     "detectTooltip": "在目前頁面執行文字偵測",
     "ocr": "辨識",
     "ocrTooltip": "辨識已偵測區域中的文字",
-    "render": "渲染"
+    "render": "渲染",
+    "preparingImport": "正在準備匯入",
+    "scanningFolders": "正在掃描拖入的資料夾",
+    "importingFiles": "正在匯入檔案"
   },
   "mask": {
     "showSegmentationMask": "顯示分割遮罩",

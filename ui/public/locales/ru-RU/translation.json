@@ -79,7 +79,10 @@
     "detectTooltip": "Запустить детекцию текста на текущей странице",
     "ocr": "OCR",
     "ocrTooltip": "Распознать текст в обнаруженных областях",
-    "render": "Рендер"
+    "render": "Рендер",
+    "preparingImport": "Подготовка импорта",
+    "scanningFolders": "Сканирование перетащенных папок",
+    "importingFiles": "Импорт файлов"
   },
   "mask": {
     "showSegmentationMask": "Показать маску сегментации",

@@ -3,8 +3,8 @@ use axum::{
     body::Body,
     extract::{DefaultBodyLimit, Multipart, Path, Query, State},
     http::{
-        HeaderValue, StatusCode,
-        header::{CONTENT_DISPOSITION, CONTENT_TYPE},
+        HeaderMap, HeaderValue, StatusCode,
+        header::{CONTENT_DISPOSITION, CONTENT_TYPE, ORIGIN},
     },
     response::{IntoResponse, Response},
 };
@@ -642,8 +642,10 @@ struct CollectedImportEntries {
 async fn import_documents_from_paths(
     State(state): State<ApiState>,
     Query(query): Query<ImportQuery>,
+    headers: HeaderMap,
     Json(request): Json<ImportPathsRequest>,
 ) -> ApiResult<Json<koharu_core::ImportResult>> {
+    ensure_local_import_origin(&headers)?;
     let resources = state.resources()?;
     let total_before = resources.storage.page_count().await;
 
@@ -1551,8 +1553,57 @@ fn binary_response(data: Vec<u8>, content_type: &str, filename: Option<String>) 
     response
 }
 
+fn ensure_local_import_origin(headers: &HeaderMap) -> ApiResult<()> {
+    let Some(origin) = headers.get(ORIGIN) else {
+        return Ok(());
+    };
+
+    let origin = origin
+        .to_str()
+        .map_err(|_| ApiError::bad_request("Invalid Origin header"))?;
+
+    if is_allowed_local_origin(origin) {
+        Ok(())
+    } else {
+        Err(ApiError::new(
+            StatusCode::FORBIDDEN,
+            format!("Origin not allowed for path imports: {origin}"),
+        ))
+    }
+}
+
+fn is_allowed_local_origin(origin: &str) -> bool {
+    origin.starts_with("http://localhost:")
+        || origin.starts_with("http://127.0.0.1:")
+        || origin == "http://tauri.localhost"
+        || origin == "https://tauri.localhost"
+        || origin == "tauri://localhost"
+}
+
 fn collect_image_entries_from_path(path: &std::path::Path) -> CollectedImportEntries {
-    if path.is_dir() {
+    let metadata = match std::fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) => {
+            return CollectedImportEntries {
+                files: Vec::new(),
+                skipped_count: 1,
+                warnings: vec![format!(
+                    "Skipped unreadable path: {} ({error})",
+                    path.display()
+                )],
+            };
+        }
+    };
+
+    if metadata.file_type().is_symlink() {
+        return CollectedImportEntries {
+            files: Vec::new(),
+            skipped_count: 1,
+            warnings: vec![format!("Skipped symbolic link: {}", path.display())],
+        };
+    }
+
+    if metadata.is_dir() {
         let mut entries = match std::fs::read_dir(path) {
             Ok(entries) => match entries.collect::<Result<Vec<_>, _>>() {
                 Ok(entries) => entries,

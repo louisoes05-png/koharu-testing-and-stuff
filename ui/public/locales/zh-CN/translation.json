@@ -79,7 +79,10 @@
     "detectTooltip": "对当前页面运行文本检测",
     "ocr": "识别",
     "ocrTooltip": "识别已检测区域中的文本",
-    "render": "渲染"
+    "render": "渲染",
+    "preparingImport": "正在准备导入",
+    "scanningFolders": "正在扫描拖入的文件夹",
+    "importingFiles": "正在导入文件"
   },
   "mask": {
     "showSegmentationMask": "显示分割遮罩",

@@ -405,15 +405,7 @@ export const processingMachine = setup({
         return null
       },
       current: () => 0,
-      total: ({ event }) => {
-        if (event.type === 'START_IMPORT_PATHS') {
-          return 0
-        }
-        if (event.type === 'START_IMPORT_FILES') {
-          return 0
-        }
-        return 0
-      },
+      total: () => 0,
       overallPercent: () => 0,
     }),
     setDocumentIdFromEvent: assign({
