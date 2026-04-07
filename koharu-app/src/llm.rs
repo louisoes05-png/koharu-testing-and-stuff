@@ -540,7 +540,7 @@ fn local_catalog_models(runtime: &RuntimeManager) -> Vec<LlmCatalogModel> {
             name: model.to_string(),
             languages: language_tags(&model.languages()),
             downloaded: model.is_downloaded(runtime),
-            download_size: Some(model.download_size().to_string()),
+            download_size_bytes: Some(model.download_size_bytes()),
         })
         .collect()
 }
@@ -602,7 +602,7 @@ async fn provider_catalog(state: &AppResources) -> anyhow::Result<Vec<LlmProvide
                                     name: model.name,
                                     languages: supported_locales(),
                                     downloaded: false,
-                                    download_size: None,
+                                    download_size_bytes: None,
                                 })
                                 .collect(),
                         ),
@@ -643,7 +643,7 @@ fn static_provider_models(
                 name: model.name.to_string(),
                 languages: supported_locales(),
                 downloaded: false,
-                download_size: None,
+                download_size_bytes: None,
             })
             .collect(),
         ProviderCatalogModels::Dynamic(_) => Vec::new(),

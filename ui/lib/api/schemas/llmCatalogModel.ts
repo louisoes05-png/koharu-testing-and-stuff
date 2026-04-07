@@ -7,7 +7,7 @@ import type { LlmTarget } from './llmTarget';
 
 export interface LlmCatalogModel {
   downloaded: boolean;
-  downloadSize?: string;
+  downloadSizeBytes?: number;
   languages: string[];
   name: string;
   target: LlmTarget;

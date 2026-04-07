@@ -55,6 +55,24 @@ const flattenCatalogModels = (catalog?: LlmCatalog): SelectableLlmModel[] => [
     ),
 ]
 
+const formatDownloadSize = (bytes?: number) => {
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes <= 0) {
+    return undefined
+  }
+
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = bytes
+  let unitIndex = 0
+
+  while (value >= 1000 && unitIndex < units.length - 1) {
+    value /= 1000
+    unitIndex += 1
+  }
+
+  const digits = value >= 10 || unitIndex === 0 ? 0 : 1
+  return `${value.toFixed(digits)} ${units[unitIndex]}`
+}
+
 export function CanvasToolbar() {
   return (
     <div className='border-border/60 bg-card text-foreground flex items-center gap-2 border-b px-3 py-2 text-xs'>
@@ -237,7 +255,9 @@ function LlmStatusPopover() {
   const selectedModelLanguages = selectedModel?.model.languages ?? []
   const selectedIsLoaded =
     llmReady && sameLlmTarget(llmState?.target, selectedTarget)
-  const selectedDownloadSize = selectedModel?.model.downloadSize
+  const selectedDownloadSize = formatDownloadSize(
+    selectedModel?.model.downloadSizeBytes,
+  )
   const selectedRequiresDownload =
     !!selectedModel &&
     !selectedModel.provider &&

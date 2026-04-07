@@ -160,7 +160,7 @@ export function AppDropzone() {
               })
             : t('workspace.dropFilesDescription', {
                 defaultValue:
-                  'Dropped folders are scanned recursively for PNG, JPG, JPEG, and WEBP images.',
+                  'Dropped folders import top-level PNG, JPG, JPEG, and WEBP images.',
               })}
         </p>
       </div>

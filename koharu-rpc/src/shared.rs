@@ -12,12 +12,21 @@ pub struct SharedState {
 struct Inner {
     resources: Arc<OnceCell<AppResources>>,
     runtime: RuntimeManager,
+    desktop_mode: bool,
 }
 
 impl SharedState {
-    pub fn new(resources: Arc<OnceCell<AppResources>>, runtime: RuntimeManager) -> Self {
+    pub fn new(
+        resources: Arc<OnceCell<AppResources>>,
+        runtime: RuntimeManager,
+        desktop_mode: bool,
+    ) -> Self {
         Self {
-            inner: Arc::new(Inner { resources, runtime }),
+            inner: Arc::new(Inner {
+                resources,
+                runtime,
+                desktop_mode,
+            }),
         }
     }
 
@@ -27,5 +36,9 @@ impl SharedState {
 
     pub fn runtime(&self) -> RuntimeManager {
         self.inner.runtime.clone()
+    }
+
+    pub fn desktop_mode(&self) -> bool {
+        self.inner.desktop_mode
     }
 }

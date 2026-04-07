@@ -140,7 +140,7 @@ pub async fn run() -> Result<()> {
     let listener = TcpListener::bind((bind_host, bind_port)).await?;
     let port = listener.local_addr()?.port();
     let resources: Arc<tokio::sync::OnceCell<AppResources>> = Default::default();
-    let shared = SharedState::new(Arc::clone(&resources), runtime.clone());
+    let shared = SharedState::new(Arc::clone(&resources), runtime.clone(), !cli.headless);
     let mut context = tauri::generate_context!();
     let assets = crate::assets::from_context(&mut context);
 

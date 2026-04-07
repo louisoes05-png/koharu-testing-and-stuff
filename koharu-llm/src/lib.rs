@@ -53,7 +53,7 @@ pub enum ModelId {
             repo = "lmg-anon/vntl-llama3-8b-v2-gguf",
             filename = "vntl-llama3-8b-v2-hf-q8_0.gguf",
             languages = "en-US",
-            download_size = "~8 GB"
+            download_size_bytes = "8000000000"
         )
     )]
     VntlLlama3_8Bv2,
@@ -63,7 +63,7 @@ pub enum ModelId {
             repo = "LiquidAI/LFM2.5-1.2B-Instruct-GGUF",
             filename = "LFM2.5-1.2B-Instruct-Q8_0.gguf",
             languages = "en-US,ar-SA,zh-CN,fr-FR,de-DE,ja-JP,ko-KR,pt-PT,es-ES",
-            download_size = "~1.3 GB"
+            download_size_bytes = "1300000000"
         )
     )]
     Lfm2_5_1_2bInstruct,
@@ -73,7 +73,7 @@ pub enum ModelId {
             repo = "SakuraLLM/Sakura-GalTransl-7B-v3.7",
             filename = "Sakura-Galtransl-7B-v3.7.gguf",
             languages = "zh-CN",
-            download_size = "~7.5 GB"
+            download_size_bytes = "7500000000"
         )
     )]
     SakuraGalTransl7Bv3_7,
@@ -83,7 +83,7 @@ pub enum ModelId {
             repo = "shing3232/Sakura-1.5B-Qwen2.5-v1.0-GGUF-IMX",
             filename = "sakura-1.5b-qwen2.5-v1.0-Q5KS.gguf",
             languages = "zh-CN",
-            download_size = "~1.2 GB"
+            download_size_bytes = "1200000000"
         )
     )]
     Sakura1_5bQwen2_5v1_0,
@@ -93,7 +93,7 @@ pub enum ModelId {
             repo = "Mungert/Hunyuan-MT-7B-GGUF",
             filename = "Hunyuan-MT-7B-q6_k_m.gguf",
             languages = "zh-CN,en-US,fr-FR,pt-PT,pt-BR,es-ES,ja-JP,tr-TR,ru-RU,ar-SA,ko-KR,th-TH,it-IT,de-DE,vi-VN,ms-MY,id-ID,fil-PH,hi-IN,zh-TW,pl-PL,cs-CZ,nl-NL,km-KH,my-MM,fa-IR,gu-IN,ur-PK,te-IN,mr-IN,he-IL,bn-BD,ta-IN,uk-UA,bo-CN,kk-KZ,mn-MN,ug-CN,yue-HK",
-            download_size = "~6.1 GB"
+            download_size_bytes = "6100000000"
         )
     )]
     HunyuanMT7B,
@@ -103,7 +103,7 @@ pub enum ModelId {
             repo = "sugoitoolkit/Sugoi-14B-Ultra-GGUF",
             filename = "Sugoi-14B-Ultra-Q8_0.gguf",
             languages = "en-US",
-            download_size = "~14 GB"
+            download_size_bytes = "14000000000"
         )
     )]
     Sugoi14bUltra,
@@ -113,7 +113,7 @@ pub enum ModelId {
             repo = "sugoitoolkit/Sugoi-32B-Ultra-GGUF",
             filename = "Sugoi-32B-Ultra-Q4_K_M.gguf",
             languages = "en-US",
-            download_size = "~19 GB"
+            download_size_bytes = "19000000000"
         )
     )]
     Sugoi32bUltra,
@@ -123,7 +123,7 @@ pub enum ModelId {
             repo = "unsloth/gemma-4-E2B-it-GGUF",
             filename = "gemma-4-e2b-it-Q8_0.gguf",
             languages = "*",
-            download_size = "~2.4 GB"
+            download_size_bytes = "2400000000"
         )
     )]
     Gemma4E2bIt,
@@ -133,7 +133,7 @@ pub enum ModelId {
             repo = "unsloth/gemma-4-E4B-it-GGUF",
             filename = "gemma-4-e4b-it-Q8_0.gguf",
             languages = "*",
-            download_size = "~4.8 GB"
+            download_size_bytes = "4800000000"
         )
     )]
     Gemma4E4bIt,
@@ -143,7 +143,7 @@ pub enum ModelId {
             repo = "unsloth/gemma-4-26B-A4B-it-GGUF",
             filename = "gemma-4-26B-A4B-it-Q8_0.gguf",
             languages = "*",
-            download_size = "~15 GB"
+            download_size_bytes = "15000000000"
         )
     )]
     Gemma4_26bA4bIt,
@@ -153,7 +153,7 @@ pub enum ModelId {
             repo = "unsloth/gemma-4-31B-it-GGUF",
             filename = "gemma-4-31B-it-Q4_K_M.gguf",
             languages = "*",
-            download_size = "~18 GB"
+            download_size_bytes = "18000000000"
         )
     )]
     Gemma4_31bIt,
@@ -163,7 +163,7 @@ pub enum ModelId {
             repo = "HauhauCS/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive",
             filename = "Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q8_K_P.gguf",
             languages = "*",
-            download_size = "~2.6 GB"
+            download_size_bytes = "2600000000"
         )
     )]
     Gemma4E2bUncensored,
@@ -173,7 +173,7 @@ pub enum ModelId {
             repo = "HauhauCS/Gemma-4-E4B-Uncensored-HauhauCS-Aggressive",
             filename = "Gemma-4-E4B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf",
             languages = "*",
-            download_size = "~3.1 GB"
+            download_size_bytes = "3100000000"
         )
     )]
     Gemma4E4bUncensored,
@@ -183,7 +183,7 @@ pub enum ModelId {
             repo = "unsloth/Qwen3.5-0.8B-GGUF",
             filename = "Qwen3.5-0.8B-Q8_0.gguf",
             languages = "*",
-            download_size = "~0.9 GB"
+            download_size_bytes = "900000000"
         )
     )]
     Qwen3_5_0_8b,
@@ -193,7 +193,7 @@ pub enum ModelId {
             repo = "unsloth/Qwen3.5-2B-GGUF",
             filename = "Qwen3.5-2B-Q8_0.gguf",
             languages = "*",
-            download_size = "~2.1 GB"
+            download_size_bytes = "2100000000"
         )
     )]
     Qwen3_5_2b,
@@ -203,7 +203,7 @@ pub enum ModelId {
             repo = "unsloth/Qwen3.5-4B-GGUF",
             filename = "Qwen3.5-4B-Q8_0.gguf",
             languages = "*",
-            download_size = "~4.3 GB"
+            download_size_bytes = "4300000000"
         )
     )]
     Qwen3_5_4b,
@@ -213,7 +213,7 @@ pub enum ModelId {
             repo = "unsloth/Qwen3.5-9B-GGUF",
             filename = "Qwen3.5-9B-Q8_0.gguf",
             languages = "*",
-            download_size = "~9.6 GB"
+            download_size_bytes = "9600000000"
         )
     )]
     Qwen3_5_9b,
@@ -223,7 +223,7 @@ pub enum ModelId {
             repo = "unsloth/Qwen3.5-27B-GGUF",
             filename = "Qwen3.5-27B-Q4_K_M.gguf",
             languages = "*",
-            download_size = "~16 GB"
+            download_size_bytes = "16000000000"
         )
     )]
     Qwen3_5_27b,
@@ -233,7 +233,7 @@ pub enum ModelId {
             repo = "unsloth/Qwen3.5-35B-A3B-GGUF",
             filename = "Qwen3.5-35B-A3B-Q8_0.gguf",
             languages = "*",
-            download_size = "~22 GB"
+            download_size_bytes = "22000000000"
         )
     )]
     Qwen3_5_35bA3b,
@@ -243,7 +243,7 @@ pub enum ModelId {
             repo = "HauhauCS/Qwen3.5-2B-Uncensored-HauhauCS-Aggressive",
             filename = "Qwen3.5-2B-Uncensored-HauhauCS-Aggressive-Q8_0.gguf",
             languages = "*",
-            download_size = "~2.1 GB"
+            download_size_bytes = "2100000000"
         )
     )]
     Qwen3_5_2bUncensored,
@@ -253,7 +253,7 @@ pub enum ModelId {
             repo = "HauhauCS/Qwen3.5-4B-Uncensored-HauhauCS-Aggressive",
             filename = "Qwen3.5-4B-Uncensored-HauhauCS-Aggressive-Q8_0.gguf",
             languages = "*",
-            download_size = "~4.3 GB"
+            download_size_bytes = "4300000000"
         )
     )]
     Qwen3_5_4bUncensored,
@@ -263,7 +263,7 @@ pub enum ModelId {
             repo = "HauhauCS/Qwen3.5-9B-Uncensored-HauhauCS-Aggressive",
             filename = "Qwen3.5-9B-Uncensored-HauhauCS-Aggressive-Q8_0.gguf",
             languages = "*",
-            download_size = "~9.6 GB"
+            download_size_bytes = "9600000000"
         )
     )]
     Qwen3_5_9bUncensored,
@@ -273,7 +273,7 @@ pub enum ModelId {
             repo = "HauhauCS/Qwen3.5-27B-Uncensored-HauhauCS-Aggressive",
             filename = "Qwen3.5-27B-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf",
             languages = "*",
-            download_size = "~16 GB"
+            download_size_bytes = "16000000000"
         )
     )]
     Qwen3_5_27bUncensored,
@@ -283,7 +283,7 @@ pub enum ModelId {
             repo = "HauhauCS/Qwen3.5-35B-A3B-Uncensored-HauhauCS-Aggressive",
             filename = "Qwen3.5-35B-A3B-Uncensored-HauhauCS-Aggressive-Q8_0.gguf",
             languages = "*",
-            download_size = "~22 GB"
+            download_size_bytes = "22000000000"
         )
     )]
     Qwen3_5_35bA3bUncensored,
@@ -302,8 +302,10 @@ impl ModelId {
         self.property("filename")
     }
 
-    pub fn download_size(&self) -> &'static str {
-        self.property("download_size")
+    pub fn download_size_bytes(&self) -> u64 {
+        self.property("download_size_bytes")
+            .parse()
+            .expect("invalid model download_size_bytes")
     }
 
     pub fn is_downloaded(&self, runtime: &RuntimeManager) -> bool {

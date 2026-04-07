@@ -645,6 +645,7 @@ async fn import_documents_from_paths(
     headers: HeaderMap,
     Json(request): Json<ImportPathsRequest>,
 ) -> ApiResult<Json<koharu_core::ImportResult>> {
+    ensure_desktop_path_imports_enabled(&state)?;
     ensure_local_import_origin(&headers)?;
     let resources = state.resources()?;
     let total_before = resources.storage.page_count().await;
@@ -1553,6 +1554,17 @@ fn binary_response(data: Vec<u8>, content_type: &str, filename: Option<String>) 
     response
 }
 
+fn ensure_desktop_path_imports_enabled(state: &ApiState) -> ApiResult<()> {
+    if state.resources.desktop_mode() {
+        Ok(())
+    } else {
+        Err(ApiError::new(
+            StatusCode::FORBIDDEN,
+            "Path imports are only available in the desktop app",
+        ))
+    }
+}
+
 fn ensure_local_import_origin(headers: &HeaderMap) -> ApiResult<()> {
     let Some(origin) = headers.get(ORIGIN) else {
         return Ok(());
@@ -1637,7 +1649,29 @@ fn collect_image_entries_from_path(path: &std::path::Path) -> CollectedImportEnt
             warnings: Vec::new(),
         };
         for entry in entries {
-            let result = collect_image_entries_from_path(&entry.path());
+            let entry_path = entry.path();
+            let entry_metadata = match std::fs::symlink_metadata(&entry_path) {
+                Ok(metadata) => metadata,
+                Err(error) => {
+                    collected.skipped_count += 1;
+                    collected.warnings.push(format!(
+                        "Skipped unreadable folder entry in {} ({error})",
+                        path.display()
+                    ));
+                    continue;
+                }
+            };
+
+            if entry_metadata.is_dir() {
+                collected.skipped_count += 1;
+                collected.warnings.push(format!(
+                    "Skipped nested folder: {}",
+                    entry_path.display()
+                ));
+                continue;
+            }
+
+            let result = collect_image_entries_from_path(&entry_path);
             collected.files.extend(result.files);
             collected.skipped_count += result.skipped_count;
             collected.warnings.extend(result.warnings);
