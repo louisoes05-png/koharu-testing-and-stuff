@@ -648,7 +648,7 @@ async fn import_documents_from_paths(
     let total_before = resources.storage.page_count().await;
 
     if request.paths.is_empty() {
-        return Err(ApiError::bad_request("No files uploaded"));
+        return Err(ApiError::bad_request("No paths provided"));
     }
 
     let collected = request.paths.iter().fold(
