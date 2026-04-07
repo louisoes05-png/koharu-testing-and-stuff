@@ -407,7 +407,7 @@ export const processingMachine = setup({
       current: () => 0,
       total: ({ event }) => {
         if (event.type === 'START_IMPORT_PATHS') {
-          return Array.from(new Set(event.paths)).length
+          return 0
         }
         if (event.type === 'START_IMPORT_FILES') {
           return filterImageFiles(event.files).length
