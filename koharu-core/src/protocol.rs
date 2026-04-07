@@ -173,6 +173,12 @@ pub enum ImportMode {
 pub struct ImportResult {
     pub total_count: usize,
     pub documents: Vec<DocumentSummary>,
+    #[serde(default)]
+    pub imported_count: usize,
+    #[serde(default)]
+    pub skipped_count: usize,
+    #[serde(default)]
+    pub warnings: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, ToSchema)]

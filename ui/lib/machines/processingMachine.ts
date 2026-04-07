@@ -2,12 +2,17 @@ import { setup, assign, fromPromise, fromCallback } from 'xstate'
 import type { QueryClient } from '@tanstack/react-query'
 import { ProgressBarStatus, getCurrentWindow } from '@/lib/backend'
 import { useEditorUiStore } from '@/lib/stores/editorUiStore'
-import { pickImageFiles, pickImageFolderFiles } from '@/lib/filePicker'
+import {
+  pickImageFiles,
+  pickImageFolderFiles,
+  filterImageFiles,
+} from '@/lib/filePicker'
 import {
   getListDocumentsQueryKey,
   getGetDocumentQueryKey,
   importDocuments,
 } from '@/lib/api/documents/documents'
+import { fetchApi } from '@/lib/api/fetch'
 import {
   detectDocument,
   recognizeDocument,
@@ -43,6 +48,20 @@ const importSelectedDocuments = async (
       files,
     },
     { mode },
+  )
+}
+
+const importDocumentsFromPaths = async (
+  paths: string[],
+  mode: 'replace' | 'append',
+): Promise<ImportResult> => {
+  return fetchApi<ImportResult>(
+    `/api/v1/documents/import-from-paths?mode=${mode}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths }),
+    },
   )
 }
 
@@ -82,6 +101,16 @@ export type ProcessingEvent =
       type: 'START_IMPORT'
       mode: 'replace' | 'append'
       source: 'files' | 'folder'
+    }
+  | {
+      type: 'START_IMPORT_FILES'
+      mode: 'replace' | 'append'
+      files: File[]
+    }
+  | {
+      type: 'START_IMPORT_PATHS'
+      mode: 'replace' | 'append'
+      paths: string[]
     }
   | { type: 'START_DETECT'; documentId: string }
   | { type: 'START_RECOGNIZE'; documentId: string }
@@ -141,8 +170,27 @@ const clearProgressBarValue = () => {
 
 const importActor = fromPromise<
   ImportResult,
-  { mode: 'replace' | 'append'; source: 'files' | 'folder' }
+  {
+    mode: 'replace' | 'append'
+    source?: 'files' | 'folder'
+    files?: File[]
+    paths?: string[]
+  }
 >(async ({ input }) => {
+  if (input.paths) {
+    if (input.paths.length === 0) throw new Error('__CANCELLED__')
+    return importDocumentsFromPaths(
+      Array.from(new Set(input.paths)),
+      input.mode,
+    )
+  }
+
+  if (input.files) {
+    const files = filterImageFiles(input.files)
+    if (files.length === 0) throw new Error('__CANCELLED__')
+    return importSelectedDocuments(files, input.mode)
+  }
+
   const picked =
     input.source === 'folder'
       ? await pickImageFolderFiles()
@@ -344,6 +392,25 @@ export const processingMachine = setup({
       overallPercent: () => 0,
       error: () => null,
     }),
+    setImportStepFromEvent: assign({
+      step: ({ event }) => {
+        if (event.type === 'START_IMPORT_PATHS') return 'scanningFolders'
+        if (event.type === 'START_IMPORT_FILES') return 'importingFiles'
+        if (event.type === 'START_IMPORT') return 'preparingImport'
+        return null
+      },
+      current: () => 0,
+      total: ({ event }) => {
+        if (event.type === 'START_IMPORT_PATHS') {
+          return Array.from(new Set(event.paths)).length
+        }
+        if (event.type === 'START_IMPORT_FILES') {
+          return filterImageFiles(event.files).length
+        }
+        return 0
+      },
+      overallPercent: () => 0,
+    }),
     setDocumentIdFromEvent: assign({
       documentId: ({ event }) => {
         if ('documentId' in event && typeof event.documentId === 'string') {
@@ -441,6 +508,22 @@ export const processingMachine = setup({
         queryKey: getListDocumentsQueryKey(),
       })
     },
+    surfaceImportWarnings: ({ event }) => {
+      const result = (event as { output?: ImportResult }).output
+      if (!result) return
+      if (result.skippedCount === 0 && result.warnings.length === 0) return
+
+      const preview = result.warnings.slice(0, 3).join(' ')
+      const suffix =
+        result.warnings.length > 3
+          ? ` Plus ${result.warnings.length - 3} more.`
+          : ''
+      useEditorUiStore
+        .getState()
+        .showError(
+          `Imported ${result.importedCount} image${result.importedCount === 1 ? '' : 's'}, skipped ${result.skippedCount}.${preview ? ` ${preview}` : ''}${suffix}`,
+        )
+    },
   },
   guards: {
     hasJobId: ({ context }) => context.jobId != null,
@@ -464,7 +547,15 @@ export const processingMachine = setup({
       on: {
         START_IMPORT: {
           target: 'importing',
-          actions: ['resetContext'],
+          actions: ['resetContext', 'setImportStepFromEvent'],
+        },
+        START_IMPORT_FILES: {
+          target: 'importing',
+          actions: ['resetContext', 'setImportStepFromEvent'],
+        },
+        START_IMPORT_PATHS: {
+          target: 'importing',
+          actions: ['resetContext', 'setImportStepFromEvent'],
         },
         START_DETECT: {
           target: 'detecting',
@@ -520,8 +611,19 @@ export const processingMachine = setup({
       invoke: {
         src: 'importActor',
         input: ({ event }) => {
-          const e = event as Extract<ProcessingEvent, { type: 'START_IMPORT' }>
-          return { mode: e.mode, source: e.source }
+          if (event.type === 'START_IMPORT') {
+            return { mode: event.mode, source: event.source }
+          }
+
+          if (event.type === 'START_IMPORT_FILES') {
+            return { mode: event.mode, files: event.files }
+          }
+
+          const e = event as Extract<
+            ProcessingEvent,
+            { type: 'START_IMPORT_PATHS' }
+          >
+          return { mode: e.mode, paths: e.paths }
         },
         onDone: {
           target: 'idle',
@@ -534,6 +636,7 @@ export const processingMachine = setup({
                 useEditorUiStore.getState().setCurrentDocumentId(firstId)
               }
             },
+            'surfaceImportWarnings',
           ],
         },
         onError: {

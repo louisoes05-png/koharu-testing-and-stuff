@@ -11,9 +11,9 @@ use axum::{
 use koharu_app::{AppResources, config as app_config, edit, engine, io, llm, pipeline};
 use koharu_core::{
     CreateTextBlock, Document, DocumentDetail, DocumentSummary, DownloadState, ExportLayer,
-    ExportResult, FontFaceInfo, JobState, JobStatus, LlmCatalog, LlmLoadRequest, LlmState,
-    MaskRegionRequest, MetaInfo, PipelineJobRequest, RenderRequest, TextBlock, TextBlockDetail,
-    TextBlockInput, TextBlockPatch, TranslateRequest,
+    ExportResult, FontFaceInfo, ImportMode, JobState, JobStatus, LlmCatalog, LlmLoadRequest,
+    LlmState, MaskRegionRequest, MetaInfo, OpenDocumentsPayload, PipelineJobRequest, RenderRequest,
+    TextBlock, TextBlockDetail, TextBlockInput, TextBlockPatch, TranslateRequest,
 };
 use koharu_psd::{PsdExportOptions, TextLayerMode};
 use serde::{Deserialize, Serialize};
@@ -41,6 +41,7 @@ impl ApiState {
 pub fn api() -> (axum::Router<ApiState>, utoipa::openapi::OpenApi) {
     OpenApiRouter::default()
         .routes(routes!(list_documents, import_documents))
+        .routes(routes!(import_documents_from_paths))
         .routes(routes!(get_document))
         .routes(routes!(update_document_style))
         .routes(routes!(get_blob))
@@ -559,6 +560,7 @@ async fn import_documents(
     mut multipart: Multipart,
 ) -> ApiResult<Json<koharu_core::ImportResult>> {
     let resources = state.resources()?;
+    let total_before = resources.storage.page_count().await;
     let mut uploaded_files = Vec::new();
 
     while let Some(field) = multipart
@@ -597,10 +599,103 @@ async fn import_documents(
     }
 
     let documents = resources.storage.list_pages().await;
+    let imported_count = match query.mode.unwrap_or(koharu_core::ImportMode::Replace) {
+        koharu_core::ImportMode::Replace => documents.len(),
+        koharu_core::ImportMode::Append => documents.len().saturating_sub(total_before),
+    };
 
     Ok(Json(koharu_core::ImportResult {
         total_count: documents.len(),
         documents,
+        imported_count,
+        skipped_count: 0,
+        warnings: Vec::new(),
+    }))
+}
+
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+struct ImportPathsRequest {
+    paths: Vec<String>,
+}
+
+struct CollectedImportEntries {
+    files: Vec<koharu_core::FileEntry>,
+    skipped_count: usize,
+    warnings: Vec<String>,
+}
+
+#[utoipa::path(
+    post,
+    path = "/documents/import-from-paths",
+    operation_id = "importDocumentsFromPaths",
+    tag = "documents",
+    params(ImportQuery),
+    request_body = ImportPathsRequest,
+    responses(
+        (status = 200, body = koharu_core::ImportResult),
+        (status = 400, body = ApiError),
+        (status = 503, body = ApiError),
+    ),
+)]
+#[tracing::instrument(level = "info", skip_all)]
+async fn import_documents_from_paths(
+    State(state): State<ApiState>,
+    Query(query): Query<ImportQuery>,
+    Json(request): Json<ImportPathsRequest>,
+) -> ApiResult<Json<koharu_core::ImportResult>> {
+    let resources = state.resources()?;
+    let total_before = resources.storage.page_count().await;
+
+    if request.paths.is_empty() {
+        return Err(ApiError::bad_request("No files uploaded"));
+    }
+
+    let collected = request.paths.iter().fold(
+        CollectedImportEntries {
+            files: Vec::new(),
+            skipped_count: 0,
+            warnings: Vec::new(),
+        },
+        |mut collected, path| {
+            let result = collect_image_entries_from_path(std::path::Path::new(path));
+            collected.files.extend(result.files);
+            collected.skipped_count += result.skipped_count;
+            collected.warnings.extend(result.warnings);
+            collected
+        },
+    );
+
+    if collected.files.is_empty() {
+        return Err(ApiError::bad_request(
+            "No supported images were found in the dropped files or folders",
+        ));
+    }
+
+    let payload = OpenDocumentsPayload {
+        files: collected.files,
+    };
+    match query.mode.unwrap_or(ImportMode::Append) {
+        ImportMode::Replace => {
+            io::open_documents(resources.clone(), payload).await?;
+        }
+        ImportMode::Append => {
+            io::add_documents(resources.clone(), payload).await?;
+        }
+    }
+
+    let documents = resources.storage.list_pages().await;
+    let imported_count = match query.mode.unwrap_or(ImportMode::Append) {
+        ImportMode::Replace => documents.len(),
+        ImportMode::Append => documents.len().saturating_sub(total_before),
+    };
+
+    Ok(Json(koharu_core::ImportResult {
+        total_count: documents.len(),
+        documents,
+        imported_count,
+        skipped_count: collected.skipped_count,
+        warnings: collected.warnings,
     }))
 }
 
@@ -1466,6 +1561,98 @@ fn binary_response(data: Vec<u8>, content_type: &str, filename: Option<String>) 
         response.headers_mut().insert(CONTENT_DISPOSITION, value);
     }
     response
+}
+
+fn collect_image_entries_from_path(path: &std::path::Path) -> CollectedImportEntries {
+    if path.is_dir() {
+        let mut entries = match std::fs::read_dir(path) {
+            Ok(entries) => match entries.collect::<Result<Vec<_>, _>>() {
+                Ok(entries) => entries,
+                Err(error) => {
+                    return CollectedImportEntries {
+                        files: Vec::new(),
+                        skipped_count: 1,
+                        warnings: vec![format!(
+                            "Skipped unreadable folder entry in {} ({error})",
+                            path.display()
+                        )],
+                    };
+                }
+            },
+            Err(error) => {
+                return CollectedImportEntries {
+                    files: Vec::new(),
+                    skipped_count: 1,
+                    warnings: vec![format!(
+                        "Skipped unreadable folder: {} ({error})",
+                        path.display()
+                    )],
+                };
+            }
+        };
+        entries.sort_by_key(|entry| entry.path());
+
+        let mut collected = CollectedImportEntries {
+            files: Vec::new(),
+            skipped_count: 0,
+            warnings: Vec::new(),
+        };
+        for entry in entries {
+            let result = collect_image_entries_from_path(&entry.path());
+            collected.files.extend(result.files);
+            collected.skipped_count += result.skipped_count;
+            collected.warnings.extend(result.warnings);
+        }
+        return collected;
+    }
+
+    if !is_supported_image_path(path) {
+        return CollectedImportEntries {
+            files: Vec::new(),
+            skipped_count: 1,
+            warnings: Vec::new(),
+        };
+    }
+
+    let data = match std::fs::read(path) {
+        Ok(data) => data,
+        Err(error) => {
+            return CollectedImportEntries {
+                files: Vec::new(),
+                skipped_count: 1,
+                warnings: vec![format!(
+                    "Skipped unreadable file: {} ({error})",
+                    path.display()
+                )],
+            };
+        }
+    };
+    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+        return CollectedImportEntries {
+            files: Vec::new(),
+            skipped_count: 1,
+            warnings: vec![format!("Skipped invalid file path: {}", path.display())],
+        };
+    };
+
+    CollectedImportEntries {
+        files: vec![koharu_core::FileEntry {
+            name: name.to_string(),
+            data,
+        }],
+        skipped_count: 0,
+        warnings: Vec::new(),
+    }
+}
+
+fn is_supported_image_path(path: &std::path::Path) -> bool {
+    matches!(
+        path.extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext.to_ascii_lowercase())
+            .as_deref(),
+        Some("png" | "jpg" | "jpeg" | "webp")
+    )
 }
 
 fn export_layer_ref(
