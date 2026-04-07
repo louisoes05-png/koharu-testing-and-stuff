@@ -1262,17 +1262,13 @@ async fn start_pipeline(
             .await
             .map_err(|_| ApiError::not_found(format!("Document not found: {document_id}")))?;
     }
-    let total_documents = match &request.document_id {
-        Some(_) => 1,
-        None => resources.storage.page_count().await,
-    };
-
     let job_id = pipeline::process(
         resources.clone(),
         koharu_core::ProcessRequest {
             document_id: request.document_id.clone(),
             llm: request.llm.clone(),
             language: request.language,
+            system_prompt: request.system_prompt,
             shader_effect: request.shader_effect,
             shader_stroke: request.shader_stroke,
         },
@@ -1280,19 +1276,11 @@ async fn start_pipeline(
     )
     .await?;
 
-    let job = JobState {
-        id: job_id,
-        kind: "pipeline".to_string(),
-        status: JobStatus::Running,
-        step: None,
-        current_document: 0,
-        total_documents,
-        current_step_index: 0,
-        total_steps: koharu_core::PipelineStep::ALL.len(),
-        overall_percent: 0,
-        error: None,
-    };
-    state.tracker.publish_job(job.clone()).await;
+    let job = state
+        .tracker
+        .get_job(&job_id)
+        .await
+        .ok_or_else(|| ApiError::internal(anyhow::anyhow!("Job not found after creation")))?;
 
     Ok(Json(job))
 }
