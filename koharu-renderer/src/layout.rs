@@ -1,7 +1,7 @@
 use std::{collections::HashMap, ops::Range};
 
 use anyhow::Result;
-use harfrust::{Direction, Feature, Tag};
+use harfrust::{Feature, Tag};
 use skrifa::{
     MetadataProvider,
     instance::{LocationRef, Size},
