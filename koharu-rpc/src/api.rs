@@ -11,8 +11,8 @@ use axum::{
 use koharu_app::{AppResources, config as app_config, edit, engine, io, llm, pipeline};
 use koharu_core::{
     CreateTextBlock, Document, DocumentDetail, DocumentSummary, DownloadState, ExportLayer,
-    ExportResult, FontFaceInfo, ImportMode, JobState, JobStatus, LlmCatalog, LlmLoadRequest,
-    LlmState, MaskRegionRequest, MetaInfo, OpenDocumentsPayload, PipelineJobRequest, RenderRequest,
+    ExportResult, FontFaceInfo, ImportMode, JobState, LlmCatalog, LlmLoadRequest, LlmState,
+    MaskRegionRequest, MetaInfo, OpenDocumentsPayload, PipelineJobRequest, RenderRequest,
     TextBlock, TextBlockDetail, TextBlockInput, TextBlockPatch, TranslateRequest,
 };
 use koharu_psd::{PsdExportOptions, TextLayerMode};
