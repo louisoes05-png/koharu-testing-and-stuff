@@ -15,10 +15,10 @@ use tokio::sync::RwLock;
 
 use koharu_app::{AppResources, edit, engine, io, llm, pipeline};
 use koharu_core::commands::{
-    AddTextBlockPayload, DocumentIdParam, ExportDocumentParams, FileEntry, InpaintRegionParams,
-    LlmGenerateParams, LlmLoadParams, MaskMorphPayload, OpenDocumentsParams, OpenDocumentsPayload,
-    ProcessParams, ProcessRequest, RemoveTextBlockPayload, RenderParams, UpdateTextBlockPayload,
-    ViewImageParams, ViewTextBlockParams,
+    AddTextBlockPayload, DocumentIdParam, DocumentIndexParam, ExportDocumentParams, FileEntry,
+    InpaintRegionParams, LlmGenerateParams, LlmLoadParams, MaskMorphPayload, OpenDocumentsParams,
+    OpenDocumentsPayload, ProcessParams, ProcessRequest, RemoveTextBlockPayload, RenderParams,
+    UpdateTextBlockPayload, ViewImageParams, ViewTextBlockParams,
 };
 use koharu_core::views::to_doc_info;
 use koharu_core::{LlmLoadRequest, PipelineLlmRequest, Region};
@@ -472,6 +472,7 @@ impl KoharuMcp {
                     options: None,
                 }),
                 language: p.language,
+                system_prompt: p.system_prompt,
                 shader_effect: effect,
                 shader_stroke: None,
             },
@@ -588,6 +589,16 @@ impl KoharuMcp {
             "Inpainted region ({},{}) {}x{}",
             p.x, p.y, p.width, p.height
         ))
+    }
+
+    #[tool(description = "Get the document ID for the document at index")]
+    async fn get_document_id_for_index(
+        &self,
+        Parameters(p): Parameters<DocumentIndexParam>,
+    ) -> Result<String, String> {
+        let res = self.resources()?;
+        let document_id = self.document_id_for_index(&res, p.index).await?;
+        Ok(document_id)
     }
 }
 
