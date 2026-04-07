@@ -1664,10 +1664,9 @@ fn collect_image_entries_from_path(path: &std::path::Path) -> CollectedImportEnt
 
             if entry_metadata.is_dir() {
                 collected.skipped_count += 1;
-                collected.warnings.push(format!(
-                    "Skipped nested folder: {}",
-                    entry_path.display()
-                ));
+                collected
+                    .warnings
+                    .push(format!("Skipped nested folder: {}", entry_path.display()));
                 continue;
             }
 
