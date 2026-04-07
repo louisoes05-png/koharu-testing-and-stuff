@@ -410,7 +410,7 @@ export const processingMachine = setup({
           return 0
         }
         if (event.type === 'START_IMPORT_FILES') {
-          return filterImageFiles(event.files).length
+          return 0
         }
         return 0
       },
