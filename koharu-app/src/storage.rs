@@ -244,8 +244,9 @@ impl Storage {
         replace: bool,
     ) -> Result<Vec<Document>> {
         use rayon::iter::{IntoParallelIterator, ParallelIterator};
+        use std::collections::HashSet;
 
-        let pages: Vec<Document> = files
+        let mut pages: Vec<Document> = files
             .into_par_iter()
             .filter_map(|file| {
                 let reader = image::ImageReader::new(std::io::Cursor::new(&file.data))
@@ -269,7 +270,16 @@ impl Storage {
             })
             .collect();
 
+        // Document ids are content hashes, so keep only one entry per image payload.
+        let mut seen_ids = HashSet::new();
+        pages.retain(|page| seen_ids.insert(page.id.clone()));
+
         let mut project = self.project.write().await;
+        if !replace {
+            let existing_ids: HashSet<&str> =
+                project.pages.iter().map(|page| page.id.as_str()).collect();
+            pages.retain(|page| !existing_ids.contains(page.id.as_str()));
+        }
         if replace {
             project.pages.clear();
         }

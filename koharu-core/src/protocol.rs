@@ -173,6 +173,12 @@ pub enum ImportMode {
 pub struct ImportResult {
     pub total_count: usize,
     pub documents: Vec<DocumentSummary>,
+    #[serde(default)]
+    pub imported_count: usize,
+    #[serde(default)]
+    pub skipped_count: usize,
+    #[serde(default)]
+    pub warnings: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, ToSchema)]
@@ -242,6 +248,9 @@ pub struct LlmCatalogModel {
     pub target: LlmTarget,
     pub name: String,
     pub languages: Vec<String>,
+    pub downloaded: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub download_size: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, ToSchema)]

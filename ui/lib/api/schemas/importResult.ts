@@ -8,5 +8,10 @@ import type { DocumentSummary } from './documentSummary'
 export interface ImportResult {
   documents: DocumentSummary[]
   /** @minimum 0 */
+  importedCount: number
+  /** @minimum 0 */
+  skippedCount: number
+  /** @minimum 0 */
   totalCount: number
+  warnings: string[]
 }
